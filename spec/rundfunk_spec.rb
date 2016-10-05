@@ -1,21 +1,15 @@
 require 'spec_helper'
+require 'toml'
 
 describe Rundfunk do
   let(:config) do
-    Rundfunk::Config.new.call(
-      name: 'podcast',
-      episodes: [
-        { number: 2, title: 'two' },
-        { number: 1, title: 'one' }
-      ],
-      keywords: ['hi', 'bye', 'hello']
-    )
+    Rundfunk::Config.new.call(TOML.load_file(File.expand_path('../fixtures/example.toml', __FILE__)))
   end
 
   describe Rundfunk::Config do
     it 'creates deeply nested struct' do
-      expect(config.name).to eq 'podcast'
-      expect(config.episodes[0].title).to eq 'two'
+      expect(config.title).to eq 'Podcast Site'
+      expect(config.episodes[0].title).to eq 'Episode 1'
     end
   end
 
@@ -24,7 +18,7 @@ describe Rundfunk do
 
     it 'calls validators' do
       validator = described_class.new do
-        type :name, String
+        type :title, String
       end
       expect_any_instance_of(type).to receive(:call).with(config).once
       validator.call(config)
@@ -42,38 +36,38 @@ describe Rundfunk do
   describe Rundfunk::Config::Validator::Type do
     context 'type' do
       it 'does not raise when class is correct' do
-        validator = described_class.new(:name, String)
+        validator = described_class.new(:title, String)
         expect { validator.call(config) }.not_to raise_error
       end
 
       it 'raises when class is incorrect' do
-        validator = described_class.new(:name, String)
-        config = Rundfunk::Config.new.call(name: 1)
+        validator = described_class.new(:title, String)
+        config = Rundfunk::Config.new.call(title: 1)
         expect { validator.call(config) }.to raise_error(Rundfunk::Config::Validator::InvalidType)
       end
     end
 
     context 'multiple types' do
       it 'does not raise when class is correct' do
-        validator = described_class.new(:name, [Integer, String])
+        validator = described_class.new(:title, [Integer, String])
         expect { validator.call(config) }.not_to raise_error
       end
 
       it 'raises when class is incorrect' do
-        validator = described_class.new(:name, [Integer, Hash])
+        validator = described_class.new(:title, [Integer, Hash])
         expect { validator.call(config) }.to raise_error(Rundfunk::Config::Validator::InvalidType)
       end
     end
 
     context 'present' do
       it 'does not raise when present is not required and key missing' do
-        validator = described_class.new(:name, String, present: false)
+        validator = described_class.new(:title, String, present: false)
         config = Rundfunk::Config.new.call({})
         expect { validator.call(config) }.not_to raise_error
       end
 
       it 'raises when present is required and key missing' do
-        validator = described_class.new(:name, String)
+        validator = described_class.new(:title, String)
         config = Rundfunk::Config.new.call({})
         expect { validator.call(config) }.to raise_error(Rundfunk::Config::Validator::KeyMissing)
       end
@@ -82,14 +76,14 @@ describe Rundfunk do
 
   describe Rundfunk::Config::Validator::ArrayType do
     it 'does not raise when class is correct' do
-      validator = described_class.new(:name, String)
-      config = Rundfunk::Config.new.call(name: ['hi', 'bye'])
+      validator = described_class.new(:title, String)
+      config = Rundfunk::Config.new.call(title: ['hi', 'bye'])
       expect { validator.call(config) }.not_to raise_error
     end
 
     it 'raises when class is incorrect' do
-      validator = described_class.new(:name, String)
-      config = Rundfunk::Config.new.call(name: ['hi', 1])
+      validator = described_class.new(:title, String)
+      config = Rundfunk::Config.new.call(title: ['hi', 1])
       expect { validator.call(config) }.to raise_error(Rundfunk::Config::Validator::InvalidType)
     end
   end

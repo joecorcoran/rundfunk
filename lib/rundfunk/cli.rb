@@ -4,7 +4,7 @@ module Rundfunk
   class Cli
     def initialize(config_path)
       raw = TOML.load_file(File.expand_path(config_path), symbolize_keys: true)
-      @config = Rundfunk::Config.new(validator).call(raw[:en]) # TODO: i18n
+      @config = Rundfunk::Config.new(validator).call(raw)
     end
 
     def validator
