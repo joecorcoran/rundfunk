@@ -3,7 +3,7 @@ require 'toml'
 module Rundfunk
   class Cli
     def initialize(config_path)
-      raw = TOML.load_file(File.expand_path(ARGV[0]), symbolize_keys: true)
+      raw = TOML.load_file(File.expand_path(config_path), symbolize_keys: true)
       @config = Rundfunk::Config.new(validator).call(raw[:en]) # TODO: i18n
     end
 
