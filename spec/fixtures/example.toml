@@ -1,0 +1,25 @@
+[en]
+title = "Podcast Site"
+url = "https://pod.cast.site"
+copyright = ""
+summary = ""
+image = "something.jpg"
+keywords = []
+categories = []
+explicit = true
+description = ""
+subtitle = ""
+owner = { name = "", email = "" }
+
+[[en.episodes]]
+number = 1
+title = ""
+subtitle = ""
+date = 1979-05-27T00:32:00-07:00
+slug = ""
+image = ""
+description = ""
+file = ""
+duration = ""
+explicit = true
+keywords = []
