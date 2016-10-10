@@ -3,4 +3,4 @@
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'rundfunk'
 
-Rundfunk::Cli.new(ARGV[0]).call
+Rundfunk::Cli.new(ARGV[0].dup).call(ARGV[1].dup, ARGV[2..-1].dup)

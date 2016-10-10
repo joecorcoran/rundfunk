@@ -1,14 +1,44 @@
 require 'toml'
+require 'rundfunk/config'
+require 'rundfunk/cli/opts'
 
 module Rundfunk
   class Cli
+    class CommandNotKnown < RuntimeError; end
+
     def initialize(config_path)
       raw = TOML.load_file(File.expand_path(config_path), symbolize_keys: true)
-      @config = Rundfunk::Config.new(validator).call(raw)
+      @config = Config.new(validator).call(raw)
     end
 
+    def call(command = 'help', args = [])
+      raise CommandNotKnown, command if command == 'call' || !respond_to?(command)
+      public_send(command, args)
+    end
+
+    def help(*)
+      puts "Help info here"
+    end
+
+    def sync(args)
+      parser = Opts.new(
+        Opt.new(:number, ['-n', '--number'], default: 0) { |n| n.to_i },
+        Opt.new(:service, ['-s', '--service'])
+      )
+      puts "Syncing with options #{parser.call(args).to_h}"
+    end
+
+    def build(args)
+      parser = Opts.new(
+        Opt.new(:output, ['-o', '--output'], default: 'all')
+      )
+      puts "Building with options #{parser.call(args).to_h}"
+    end
+
+    private
+
     def validator
-      Rundfunk::Config::Validator.new do
+      Config::Validator.new do
         type :title, String
         type :url, String
         type :copyright, String
@@ -36,10 +66,6 @@ module Rundfunk
           array :keywords, String
         end
       end
-    end
-
-    def call(opts = nil)
-      # dispatch renderer/writer/uploader etc.
     end
   end
 end
