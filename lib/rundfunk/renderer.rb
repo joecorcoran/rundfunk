@@ -4,7 +4,7 @@ module Rundfunk
       @feed = feed
     end
 
-    def call
+    def call(render_time = Time.now)
       raise NotImplementedError
     end
   end

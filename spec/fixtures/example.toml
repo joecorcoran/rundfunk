@@ -1,20 +1,20 @@
 title = "Podcast Site"
-url = "https://pod.cast.site"
-copyright = ""
-summary = ""
+url = "https://podcast.site"
+copyright = "2016 Podcast owner"
+summary = "Podcast summary"
 image = "something.jpg"
-keywords = []
-categories = []
+keywords = ["one", "two"]
+categories = ["News & Politics", "Comedy"]
 explicit = true
-description = ""
-subtitle = ""
+description = "Description of podcast"
+subtitle = "Podcast subtitle"
+language = "en"
 
 [owner]
-name = ""
-email = ""
+name = "Joe Corcoran"
+email = "joe@corcoran.io"
 
 [[episodes]]
-number = 1
 title = "Episode 1"
 subtitle = ""
 date = 1979-05-27T00:32:00-07:00
@@ -27,10 +27,9 @@ explicit = true
 keywords = []
 
 [[episodes]]
-number = 2
 title = "Episode 2"
 subtitle = ""
-date = 1979-05-27T00:32:00-07:00
+date = 1979-05-28T00:32:00-07:00
 slug = ""
 image = ""
 description = ""

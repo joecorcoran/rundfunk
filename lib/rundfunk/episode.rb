@@ -5,7 +5,7 @@ module Rundfunk
     include Comparable, Wrapper
 
     def <=>(other)
-      number <=> other.number 
+      date <=> other.date
     end
   end
 end

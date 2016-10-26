@@ -1,4 +1,5 @@
 require 'oga'
+require 'time'
 
 module Rundfunk
   class Renderer::Rss < Renderer
@@ -25,6 +26,21 @@ module Rundfunk
       @channel ||= element('channel')
     end
 
+    def metadata(render_time)
+      @metadata ||= [
+        element('title') { |e| e.inner_text = @feed.title },
+        element('pubDate') { |e| e.inner_text = @feed.pub_date.rfc822 },
+        element('lastBuildDate') { |e| e.inner_text = render_time.rfc822 },
+        element('generator') { |e| e.inner_text = "Rundfunk #{VERSION}" },
+        element('link') { |e| e.inner_text = @feed.url },
+        element('language') { |e| e.inner_text = @feed.language },
+        element('copyright') { |e| e.children << cdata(@feed.copyright) },
+        element('docs') { |e| e.inner_text = @feed.url },
+        element('description') { |e| e.children << cdata(@feed.description) },
+        element('atom:link', href: @feed.rss_url, rel: 'self', type: 'application/rss+xml')
+      ]
+    end
+
     def items
       @items ||= @feed.episodes.map do |episode|
         element('item') do |item|
@@ -33,18 +49,28 @@ module Rundfunk
       end
     end
 
-    def element(name, **args, &block)
-      Oga::XML::Element.new(**args.merge(name: name)).tap do |e|
-        block.call(e) if block_given?
-      end
-    end
-
-    def call
+    def call(render_time = Time.now)
       doc.tap do |d|
+        channel.children.concat(metadata(render_time))
         channel.children.concat(items)
         root.children << channel
         d.children << root
       end.to_xml
+    end
+
+    private
+
+    def element(name, **attrs, &block)
+      Oga::XML::Element.new(name: name).tap do |e|
+        attrs.each do |k, v|
+          e[k] = v
+        end
+        block.call(e) if block_given?
+      end
+    end
+
+    def cdata(text = '')
+      Oga::XML::Cdata.new(text: text)
     end
   end
 end

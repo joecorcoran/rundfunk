@@ -1,16 +1,11 @@
 require 'spec_helper'
-require 'toml'
 
-describe Rundfunk do
-  let(:config) do
-    Rundfunk::Config.new.call(TOML.load_file(File.expand_path('../fixtures/example.toml', __FILE__)))
-  end
+RSpec.describe Rundfunk::Config do
+  let(:config) { load_config }
 
-  describe Rundfunk::Config do
-    it 'creates deeply nested struct' do
-      expect(config.title).to eq 'Podcast Site'
-      expect(config.episodes[0].title).to eq 'Episode 1'
-    end
+  it 'creates deeply nested struct' do
+    expect(config.title).to eq 'Podcast Site'
+    expect(config.episodes[0].title).to eq 'Episode 1'
   end
 
   describe Rundfunk::Config::Validator do
@@ -86,21 +81,5 @@ describe Rundfunk do
       config = Rundfunk::Config.new.call(title: ['hi', 1])
       expect { validator.call(config) }.to raise_error(Rundfunk::Config::Validator::InvalidType)
     end
-  end
-
-  describe Rundfunk::Feed do
-    let(:feed) { described_class.new(config) }
-
-    it 'contains a sorted set of episodes' do
-      expect(feed.episodes).to be_a SortedSet
-      expect(feed.episodes.first.number).to eq 1
-    end
-  end
-
-  describe Rundfunk::Renderer::Rss do
-    let(:feed) { Rundfunk::Feed.new(config) }
-    subject { described_class.new(feed) }
-
-    it 'outputs rss'
   end
 end
