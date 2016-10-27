@@ -11,6 +11,11 @@ module Rundfunk
     class Opts
       include Enumerable
 
+      def self.[](argv, *opts)
+        parser = new(*opts)
+        parser.call(argv)
+      end
+
       def initialize(*opts)
         @opts = opts
       end
@@ -47,6 +52,10 @@ module Rundfunk
     end
 
     class Opt
+      def self.[](*args, **kwargs, &coerce)
+        new(*args, **kwargs, &coerce)
+      end
+
       def initialize(name, formats, default: nil, &coerce)
         @name, @formats, @default, @coerce = name, formats, default, coerce
       end

@@ -13,7 +13,12 @@ module Rundfunk
         end
       end
 
-      class KeyMissing < Error; end
+      class KeyMissing < Error
+        def message
+          "Key `#{super}` missing"
+        end
+      end
+
       class ValidatorMissing < Error; end
     end
   end

@@ -7,7 +7,7 @@ module Rundfunk
         end
 
         def enforce_present!(subject)
-          raise KeyMissing unless subject
+          raise(KeyMissing, @key) unless subject
         end
       end
     end

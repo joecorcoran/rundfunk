@@ -1,10 +1,7 @@
-require 'oga'
-require 'time'
-
 module Rundfunk
   class Renderer::Rss < Renderer
     def decl
-      @decl ||= Oga::XML::XmlDeclaration.new(version: '1.0', encoding: 'UTF-8')
+      Oga::XML::XmlDeclaration.new(version: '1.0', encoding: 'UTF-8')
     end
 
     def doc
@@ -59,15 +56,6 @@ module Rundfunk
     end
 
     private
-
-    def element(name, **attrs, &block)
-      Oga::XML::Element.new(name: name).tap do |e|
-        attrs.each do |k, v|
-          e[k] = v
-        end
-        block.call(e) if block_given?
-      end
-    end
 
     def cdata(text = '')
       Oga::XML::Cdata.new(text: text)

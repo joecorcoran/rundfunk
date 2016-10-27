@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'toml'
 require 'rundfunk/config'
 require 'rundfunk/cli/opts'
@@ -6,36 +7,68 @@ module Rundfunk
   class Cli
     class CommandNotKnown < RuntimeError; end
 
-    def initialize(config_path)
-      raw = TOML.load_file(File.expand_path(config_path), symbolize_keys: true)
-      @config = Config.new(validator).call(raw)
+    def initialize(args, stdout = $stdout, stderr = $stderr)
+      @args, @stdout, @stderr = args || [], stdout, stderr
     end
 
-    def call(command = 'help', args = [])
+    def call(command)
+      command ||= 'help'
       raise CommandNotKnown, command if command == 'call' || !respond_to?(command)
-      public_send(command, args)
+      public_send(command)
     end
 
     def help(*)
       puts "Help info here"
     end
 
-    def sync(args)
-      parser = Opts.new(
-        Opt.new(:number, ['-n', '--number'], default: 0) { |n| n.to_i },
-        Opt.new(:service, ['-s', '--service'])
-      )
-      puts "Syncing with options #{parser.call(args).to_h}"
+    def sync
+      opts = Opts[@args, Opt[:service, %w{-s --service}]]
+      out "Syncing with options #{opts.to_h}"
     end
 
-    def build(args)
-      parser = Opts.new(
-        Opt.new(:output, ['-o', '--output'], default: 'all')
-      )
-      puts "Building with options #{parser.call(args).to_h}"
+    def build
+      opts = Opts[@args, Opt[:output, %w{-o --output}, default: 'site']]
+      output_dir = File.expand_path(opts.output)
+      write_file Renderer::Rss.new(feed).call, output_dir, 'rss.xml'
+      write_file Renderer::Html::Index.new(feed).call, output_dir, 'index.html'
+      # write episode pages to output_dir/episode_slug/index.html
     end
 
     private
+
+    def config
+      @config ||= begin
+        opts = Opts[@args, Opt[:config, %w{-c --config}, default: 'config.toml']]
+        config_path = File.expand_path(opts.config)
+        raw = TOML.load_file(config_path, symbolize_keys: true)
+        Config.new(validator).call(raw) if raw
+      rescue SystemCallError => e
+        err "Could not find config file #{config_path}"
+        exit 1
+      end
+    end
+
+    def feed
+      @feed ||= Feed.new(config)
+    end
+
+    def out(str)
+      @stdout.puts(str)
+    end
+
+    def err(str)
+      @stderr.puts(str)
+    end
+
+    def write_file(contents, *path)
+      file_path = File.join(*path)
+      dir_path = File.dirname(file_path)
+      FileUtils.mkdir_p(dir_path)
+      File.open(file_path, 'w') do |file|
+        out "Writing #{file_path}"
+        file << contents
+      end
+    end
 
     def validator
       Config::Validator.new do
@@ -53,7 +86,6 @@ module Rundfunk
         type [:owner, :email], String
 
         with :episodes do
-          type :number, Integer
           type :title, String
           type :subtitle, String
           type :date, Time
