@@ -5,10 +5,6 @@ require 'ostruct'
 
 module Rundfunk
   class Config
-    def self.load(path)
-      new.call()
-    end
-
     def initialize(validator = Validator.new)
       @validator = validator
     end

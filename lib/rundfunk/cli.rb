@@ -42,9 +42,10 @@ module Rundfunk
         config_path = File.expand_path(opts.config)
         raw = TOML.load_file(config_path, symbolize_keys: true)
         Config.new(validator).call(raw) if raw
+      rescue Config::Validator::Error => e
+        quit "Validation failed (#{e.message})"; exit 1
       rescue SystemCallError => e
-        err "Could not find config file #{config_path}"
-        exit 1
+        quit "Could not find config file #{config_path}"
       end
     end
 
@@ -58,6 +59,11 @@ module Rundfunk
 
     def err(str)
       @stderr.puts(str)
+    end
+
+    def quit(str)
+      err(str)
+      exit 1
     end
 
     def write_file(contents, *path)

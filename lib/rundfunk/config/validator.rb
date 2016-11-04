@@ -29,7 +29,7 @@ module Rundfunk
       register :array, ArrayType
 
       def initialize(&block)
-        @run, @run_each, @run_all = [], [], []
+        @run, @run_each = [], []
         instance_eval(&block) if block_given?
       end
 
@@ -55,8 +55,6 @@ module Rundfunk
       def call(config)
         @run.each { |v| v.call(config) }
         @run_each.each { |k, v| config.send(k).each { |x| v.call(x) } }
-      rescue Error => e
-        puts "Validation failed: #{e.message}" and exit
       end
     end
   end
